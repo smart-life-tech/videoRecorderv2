@@ -80,13 +80,17 @@ class VideoRecorderApp(tk.Tk):
         self.recordStart=False
         self.shot_completed=False
         self.writing=True
+        
         # Left side
         left_frame = tk.Frame(self, bg="black", width=400, height=600)
         left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=False)
 
         self.camera_labels = []
         self.video_captures = []
+        # Create a list to store Combobox widgets
+        self.camera_dropdowns = []
         camera_indexes=get_camera_index()
+        self.selected_cameras = {index: 0 for index in [0, 1, 2, 4]}  # Dictionary to store selected cameras for each grid
         for i, camera_index in enumerate([0, 1, 2, 4]):
             row = i // 2  # Calculate row index based on current iteration
             col = i % 2   # Calculate column index based on current iteration
@@ -94,11 +98,19 @@ class VideoRecorderApp(tk.Tk):
             camera_frame = tk.Label(left_frame, bg="white", relief=tk.SUNKEN, width=50, height=20)
             camera_frame.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
              # Dropdown menu for camera selection
-            dropdown = ttk.Combobox(left_frame, values=[f"Camera {index}" for index in camera_indexes])
-            dropdown.current(0)  # Set default selection
-            dropdown.grid(row=(row), column=(col), padx=10,pady=(0, 10), sticky="n")
+            # Dropdown menu for camera selection
+            self.options = [f"Camera {index}" for index in camera_indexes]
+            self.options.append("None")  # Add "None" option
+            self.dropdown = ttk.Combobox(left_frame, values=self.options)
+            self.dropdown.current(len(self.options) - 1)  # Set default selection to "None"
+            self.dropdown.grid(row=(row), column=(col), padx=10,pady=(0, 10), sticky="n")
             self.camera_labels.append(camera_frame)
             #print(self.camera_labels)
+             # Bind a callback function to the dropdown menu
+            self.dropdown.bind("<<ComboboxSelected>>", lambda event, index=camera_index: self.dropdown_callback(event, index))
+
+            # Add the Combobox widget to the list
+            self.camera_dropdowns.append(self.dropdown)
             
 
         # Right side
@@ -146,6 +158,18 @@ class VideoRecorderApp(tk.Tk):
 
         # Update video feed
         self.update_video_feed()
+    
+    
+    # Callback function for dropdown menu selection
+    def dropdown_callback(self, event, camera_index):
+        selected_value = self.camera_dropdowns[camera_index].get()
+        if selected_value == "None":
+            self.selected_cameras[camera_index] = None
+            print("Camera index", camera_index, "set to None")
+        else:
+            self.selected_cameras[camera_index] = selected_value
+            print("Camera index", camera_index, "set to", selected_value)
+        
         
     def record(self):
         if not self.recording:
@@ -282,41 +306,52 @@ class VideoRecorderApp(tk.Tk):
     def update_video_feed(self):
         #print(len(self.captures))
         for i,(capture, label)  in enumerate (zip(self.captures, self.camera_labels)):
-            #print(capture)
+            #print(len(self.captures))
             ret, frame = capture.read()
             if ret:
                 width= int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
                 height= int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                print(width,height)
                 if self.output_paths is not None and self.recordStart:
                     #print(self.output_paths[0])
                     global writer,writer2,writer3,writer4
                     if self.writing:
-                        writer= cv2.VideoWriter(self.output_paths[0], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
-                        if len(self.captures)>=1:
+                        if self.selected_cameras[0] is not None:
+                            print("writing",self.output_paths[0])
+                            writer= cv2.VideoWriter(self.output_paths[0], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
+                        if len(self.captures)>=2 and self.selected_cameras[1] is not None:
                             writer2= cv2.VideoWriter(self.output_paths[1], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
-                        if len(self.captures)>=2:
+                        if len(self.captures)>=3 and self.selected_cameras[2] is not None:
                             writer3= cv2.VideoWriter(self.output_paths[2], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
-                        if len(self.captures)>=3:
+                        if len(self.captures)>=4 and self.selected_cameras[3] is not None:
                             writer4= cv2.VideoWriter(self.output_paths[3], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
                         self.writing=False
-                    if i==0:
+                    if i==0 and self.selected_cameras[0] is not None:
+                        #print("recording on cam0")
                         writer.write(frame)
-                    if i==1:
+                    if i==1 and len(self.captures)>=2 and self.selected_cameras[1] is not None:
                         writer2.write(frame)
-                    if i==2:
+                    if i==2  and len(self.captures)>=3 and self.selected_cameras[2] is not None:
                         writer3.write(frame)
-                    if i==3:
+                    if i==3 and len(self.captures)>=4 and self.selected_cameras[3] is not None:
                         writer4.write(frame)
                 if self.shot_completed:
-                    writer.release()
-                    writer2.release()
-                    writer3.release()
-                    writer4.release()
+                    #print(len(self.captures))
+                    if len(self.captures)>=1:
+                        print("release writer")
+                        writer.release()
+                    if len(self.captures)>=2:
+                        writer2.release()
+                    if len(self.captures)>=3:    
+                        writer3.release()
+                    if len(self.captures)>=4:
+                        writer4.release()
                     self.recordStart=False
+                    self.shot_completed=False
                     self.writing=True
-                frame = cv2.resize(frame, (350, 250))
+                #frame = cv2.resize(frame, (350, 250))
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                frame = cv2.resize(frame, (350, 250))
+                #frame = cv2.resize(frame, (350, 250))
                 frame = Image.fromarray(frame)
                 frame = ImageTk.PhotoImage(frame)
                 label.imgtk = frame

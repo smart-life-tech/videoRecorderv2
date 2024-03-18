@@ -8,8 +8,9 @@ import os
 
 def get_camera_index():
     # Try different camera indexes
+    print("pinging all cameras wait a bit")
     detected_indexes = []
-    for index in range(10):  # Adjust the range as needed
+    for index in range(5):  # Adjust the range as needed
         cap = cv2.VideoCapture(index)
         if cap.isOpened():
             # Release the capture device
@@ -91,7 +92,8 @@ class VideoRecorderApp(tk.Tk):
         self.camera_dropdowns = []
         camera_indexes=get_camera_index()
         self.selected_cameras = {index: 0 for index in [0, 1, 2, 4]}  # Dictionary to store selected cameras for each grid
-        for i, camera_index in enumerate([0, 1, 2, 4]):
+        for i, camera_index in enumerate([0, 1, 2, 3]):
+            print(camera_index)
             row = i // 2  # Calculate row index based on current iteration
             col = i % 2   # Calculate column index based on current iteration
 
@@ -155,6 +157,7 @@ class VideoRecorderApp(tk.Tk):
 
         # Capture frames from USB cameras
         self.captures = self.capture_frames(self.camera_indexes)
+        print("captures :" ,self.captures)
 
         # Update video feed
         self.update_video_feed()
@@ -162,12 +165,15 @@ class VideoRecorderApp(tk.Tk):
     
     # Callback function for dropdown menu selection
     def dropdown_callback(self, event, camera_index):
+        print(camera_index)
         selected_value = self.camera_dropdowns[camera_index].get()
         if selected_value == "None":
             self.selected_cameras[camera_index] = None
             print("Camera index", camera_index, "set to None")
         else:
             self.selected_cameras[camera_index] = selected_value
+            if self.selected_cameras[camera_index] ==3:
+                selected_value = 4
             print("Camera index", camera_index, "set to", selected_value)
         
         
@@ -299,8 +305,12 @@ class VideoRecorderApp(tk.Tk):
     def capture_frames(self, camera_indexes):
         captures = []
         for index in camera_indexes:
+            print(index)
             capture = cv2.VideoCapture(index)
-            captures.append(capture)
+            if camera_indexes !=3:
+                captures.append(capture)
+            if camera_indexes==3:
+                captures.append(4)
         return captures
 
     def update_video_feed(self):
@@ -311,7 +321,7 @@ class VideoRecorderApp(tk.Tk):
             if ret:
                 width= int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
                 height= int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                print(width,height)
+                #print(width,height)
                 if self.output_paths is not None and self.recordStart:
                     #print(self.output_paths[0])
                     global writer,writer2,writer3,writer4
@@ -362,9 +372,6 @@ class VideoRecorderApp(tk.Tk):
                
         self.after(10, self.update_video_feed)
         
-    
-
-
 if __name__ == "__main__":
     app = VideoRecorderApp()
     app.mainloop()

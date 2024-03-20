@@ -81,7 +81,10 @@ class VideoRecorderApp(tk.Tk):
         self.recordStart=False
         self.shot_completed=False
         self.writing=True
-        
+        # Initialize take number
+        self.take_number = 1
+        self.width = 1920 #adjust the number here
+        self.height = 1080 #adjust the height too
         # Left side
         left_frame = tk.Frame(self, bg="black", width=400, height=600)
         left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=False)
@@ -122,7 +125,7 @@ class VideoRecorderApp(tk.Tk):
         active_shot_label = tk.Label(right_frame, text="Active Shot:", bg="black", fg="white")
         active_shot_label.pack()
 
-        active_shot_entry = tk.Entry(right_frame, textvariable=self.active_shot, state='readonly')
+        active_shot_entry = tk.Entry(right_frame, textvariable=self.active_shot)
         active_shot_entry.pack()
 
         prefix_label = tk.Label(right_frame, text="Prefix:", bg="black", fg="white")
@@ -148,7 +151,7 @@ class VideoRecorderApp(tk.Tk):
         self.shot_listbox.bind("<<ListboxSelect>>", self.on_shot_select)
         # Specify camera indexes for the connected USB cameras
         # Get the automatically detected camera index
-        camera_index = get_camera_index()
+        camera_index = camera_indexes
         if camera_index is not None:
             print("Automatically detected camera index:", camera_index)
         else:
@@ -207,7 +210,8 @@ class VideoRecorderApp(tk.Tk):
         camera_indexes = self.camera_indexes
 
        # Construct the output paths for each camera using the prefix and active shot
-        self.output_paths = [os.path.join(self.destination_folder.get(), f"{self.prefix.get()}_{self.active_shot.get()}_{i}.mp4") for i in range(4)]
+        # Construct the output paths for each camera using the prefix, active shot, and take number
+        self.output_paths = [os.path.join(self.destination_folder.get(), f"{self.prefix.get()}_Shot_{self.active_shot.get()}_Take_{self.take_number}_Camera_{i}.mp4") for i in range(4)]
         """
         # Create a VideoRecorder instance for each camera
         recorders = [VideoRecorder(camera_indexes[i], output_paths[i],self.prefix.get()) for i in range(len(camera_indexes))]
@@ -230,6 +234,7 @@ class VideoRecorderApp(tk.Tk):
         self.record_button.config(bg="red")
         self.recording=True
         print("recording started")
+        self.take_number=self.take_number+1
         #messagebox.showinfo("Info", "recording started")
 
 
@@ -321,6 +326,8 @@ class VideoRecorderApp(tk.Tk):
             if ret:
                 width= int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
                 height= int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                #width= self.width
+                #height= self.height
                 #print(width,height)
                 if self.output_paths is not None and self.recordStart:
                     #print(self.output_paths[0])
@@ -333,7 +340,7 @@ class VideoRecorderApp(tk.Tk):
                             writer2= cv2.VideoWriter(self.output_paths[1], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
                         if len(self.captures)>=3 and self.selected_cameras[2] is not None:
                             writer3= cv2.VideoWriter(self.output_paths[2], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
-                        if len(self.captures)>=4 and self.selected_cameras[3] is not None:
+                        if len(self.captures)>=4 and self.selected_cameras[4] is not None:
                             writer4= cv2.VideoWriter(self.output_paths[3], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
                         self.writing=False
                     if i==0 and self.selected_cameras[0] is not None:
@@ -347,7 +354,7 @@ class VideoRecorderApp(tk.Tk):
                         writer4.write(frame)
                 if self.shot_completed:
                     #print(len(self.captures))
-                    if len(self.captures)>=1:
+                    if len(self.captures)>=1 and  self.selected_cameras[0] is not None:
                         print("release writer")
                         writer.release()
                     if len(self.captures)>=2:
@@ -359,7 +366,7 @@ class VideoRecorderApp(tk.Tk):
                     self.recordStart=False
                     self.shot_completed=False
                     self.writing=True
-                #frame = cv2.resize(frame, (350, 250))
+                frame = cv2.resize(frame, (350, 250))
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 #frame = cv2.resize(frame, (350, 250))
                 frame = Image.fromarray(frame)

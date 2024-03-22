@@ -94,7 +94,7 @@ class VideoRecorderApp(tk.Tk):
         # Create a list to store Combobox widgets
         self.camera_dropdowns = []
         camera_indexes=get_camera_index()
-        self.selected_cameras = {index: 0 for index in [0, 1, 2, 4]}  # Dictionary to store selected cameras for each grid
+        self.selected_cameras = {index: 0 for index in [0, 1, 2, 3]}  # Dictionary to store selected cameras for each grid
         for i, camera_index in enumerate([0, 1, 2, 3]):
             print(camera_index)
             row = i // 2  # Calculate row index based on current iteration
@@ -316,6 +316,10 @@ class VideoRecorderApp(tk.Tk):
                 captures.append(capture)
             if camera_indexes==3:
                 captures.append(4)
+        print(captures[0].get(cv2.CAP_PROP_FRAME_WIDTH))
+        print(captures[0].get(cv2.CAP_PROP_FRAME_HEIGHT))
+         #width= int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+                #height= int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
         return captures
 
     def update_video_feed(self):
@@ -375,6 +379,8 @@ class VideoRecorderApp(tk.Tk):
                 #print(frame)
                 #print(label)
                 label.config(image=frame)
+                self.camera_labels[i].config(image=frame)
+                self.camera_labels[i].image = frame
                 
                
         self.after(10, self.update_video_feed)

@@ -330,7 +330,7 @@ class VideoRecorderApp(tk.Tk):
             if ret:
                 width= int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
                 height= int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                #width= self.width
+                #width= self.width #uncomment for the custom height
                 #height= self.height
                 #print(width,height)
                 if self.output_paths is not None and self.recordStart:

@@ -344,7 +344,7 @@ class VideoRecorderApp(tk.Tk):
                             writer2= cv2.VideoWriter(self.output_paths[1], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
                         if len(self.captures)>=3 and self.selected_cameras[2] is not None:
                             writer3= cv2.VideoWriter(self.output_paths[2], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
-                        if len(self.captures)>=4 and self.selected_cameras[4] is not None:
+                        if len(self.captures)>=4 and self.selected_cameras[3] is not None:
                             writer4= cv2.VideoWriter(self.output_paths[3], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
                         self.writing=False
                     if i==0 and self.selected_cameras[0] is not None:

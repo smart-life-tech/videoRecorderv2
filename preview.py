@@ -26,7 +26,7 @@ class CameraPreviewApp:
             dropdown.grid(row=(row), column=(col), padx=10,pady=(0, 10), sticky="n")
             dropdown.bind("<<ComboboxSelected>>", lambda event, index=i: self.dropdown_callback(event, index))
             self.camera_selections.append(dropdown)
-
+        print(self.camera_labels)
         self.root.mainloop()
 
     def dropdown_callback(self, event, index):
@@ -42,7 +42,7 @@ class CameraPreviewApp:
         
         # Open the selected camera index
         self.captures[index] = cv2.VideoCapture(selected_camera_index)
-        
+        print(self.captures[index])
         # Start updating the preview for the selected camera
         self.update_preview(index)
 

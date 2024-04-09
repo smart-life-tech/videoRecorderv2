@@ -19,26 +19,6 @@ def get_camera_index():
     return detected_indexes
     #return None  # No camera detected
 
-class MultiCamRecorder:
-    def __init__(self, camera_indexes, output_paths, resolution=(640, 480), fps=30):
-        self.captures = cv2.VideoCapture(camera_indexes[0]) 
-        self.captures.set(cv2.CAP_PROP_FRAME_WIDTH, resolution[0])
-        self.captures.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
-        self.captures.set(cv2.CAP_PROP_FPS, fps)
-        width= int(self.captures.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height= int(self.captures.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        self.writers = cv2.VideoWriter(output_paths[0], cv2.VideoWriter_fourcc(*'DIVX'), 20, (width,height))
-
-    def record(self):
-        while True:
-            ret,frames = self.captures.read()
-            self.writers.write(frames)
-            
-
-    def release(self):
-            self.captures.release()
-            self.writers.release()
-
 class VideoRecorder:
     def __init__(self, camera_index, output_path,prefix):
         self.camera_index = camera_index
@@ -90,7 +70,7 @@ class VideoRecorderApp(tk.Tk):
         left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=False)
 
         self.camera_labels = []
-        self.video_captures = []
+        self.video_captures = [None] * 4
         # Create a list to store Combobox widgets
         self.camera_dropdowns = []
         camera_indexes=get_camera_index()
@@ -116,7 +96,7 @@ class VideoRecorderApp(tk.Tk):
 
             # Add the Combobox widget to the list
             self.camera_dropdowns.append(self.dropdown)
-            
+        print(self.camera_labels)
 
         # Right side
         right_frame = tk.Frame(self)
@@ -175,28 +155,25 @@ class VideoRecorderApp(tk.Tk):
             print("Camera index", camera_index, "set to None")
         else:
             self.selected_cameras[camera_index] = selected_value
-            if self.selected_cameras[camera_index] ==3:
+            if self.selected_cameras[camera_index] =='Camera 0':
+                selected_value = 0
+            if self.selected_cameras[camera_index] =='Camera 1':
+                selected_value = 1
+            if self.selected_cameras[camera_index] =='Camera 2':
+                selected_value = 2
+            if self.selected_cameras[camera_index] =='Camera 3':
                 selected_value = 4
             print("Camera index", camera_index, "set to", selected_value)
         
-        selected_camera_index = self.camera_dropdowns[camera_index].current()
+            selected_camera_index = self.camera_dropdowns[camera_index].current()
 
-        # Check if the selected camera index is already in use
-        if selected_camera_index < 0 or selected_camera_index >= 4:
-            return
-        
-        # Release the current capture if it's not None
-        if self.captures[camera_index] is not None:
-            self.captures[camera_index].release()
-        
-        # Open the selected camera index
-        self.captures[camera_index] = cv2.VideoCapture(selected_camera_index)
-        
-        # Start updating the preview for the selected camera
-        self.update_preview(camera_index)
+            # Check if the selected camera index is already in use
+            if selected_camera_index < 0 or selected_camera_index >= 4:
+                return
+            selected_value=int(selected_value)
 
     def update_preview(self, index):
-        capture = self.captures[index]
+        capture = self.video_captures[index]
         label = self.camera_labels[index]
 
         ret, frame = capture.read()
@@ -210,9 +187,6 @@ class VideoRecorderApp(tk.Tk):
             # Update label with new image
             label.config(image=img)
             label.image = img
-
-        # Schedule next update after 10 milliseconds
-        self.after(10, lambda: self.update_preview(index))
         
     def record(self):
         if not self.recording:
@@ -350,6 +324,7 @@ class VideoRecorderApp(tk.Tk):
                 captures.append(capture)
             if camera_indexes==3:
                 captures.append(4)
+            capture.release()
         print(captures[0].get(cv2.CAP_PROP_FRAME_WIDTH))
         print(captures[0].get(cv2.CAP_PROP_FRAME_HEIGHT))
          #width= int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -357,11 +332,22 @@ class VideoRecorderApp(tk.Tk):
         return captures
 
     def update_video_feed(self):
-        #print(len(self.captures))
+            
         for i,(capture, label)  in enumerate (zip(self.captures, self.camera_labels)):
-            #print(len(self.captures))
-            ret, frame = capture.read()
+           
+            ret, frame = cv2.VideoCapture(0).read()
             if ret:
+                label = self.camera_labels[0]
+                # Convert frame from BGR to RGB
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                # Resize frame to fit label size
+                frame_resized = cv2.resize(frame_rgb, (300, 200))
+                # Convert frame to ImageTk format
+                img = ImageTk.PhotoImage(image=Image.fromarray(frame_resized))
+                # Update label with new image
+                label.config(image=img)
+                label.image = img
+                
                 width= int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
                 height= int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
                 #width= self.width #uncomment for the custom height
@@ -404,19 +390,7 @@ class VideoRecorderApp(tk.Tk):
                     self.recordStart=False
                     self.shot_completed=False
                     self.writing=True
-                """frame = cv2.resize(frame, (350, 250))
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                #frame = cv2.resize(frame, (350, 250))
-                frame = Image.fromarray(frame)
-                frame = ImageTk.PhotoImage(frame)
-                label.imgtk = frame
-                #print(frame)
-                #print(label)
-                label.config(image=frame)
-                self.camera_labels[i].config(image=frame)
-                self.camera_labels[i].image = frame"""
-                
-               
+                            
         self.after(10, self.update_video_feed)
         
 if __name__ == "__main__":

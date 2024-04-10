@@ -73,6 +73,11 @@ class VideoRecorderApp(tk.Tk):
         self.video_captures = [None] * 4
         # Create a list to store Combobox widgets
         self.camera_dropdowns = []
+        self.cam1=0
+        self.cam2=0
+        self.cam3=0
+        self.cam4=0
+        
         camera_indexes=get_camera_index()
         self.selected_cameras = {index: 0 for index in [0, 1, 2, 3]}  # Dictionary to store selected cameras for each grid
         for i, camera_index in enumerate([0, 1, 2, 3]):
@@ -141,7 +146,10 @@ class VideoRecorderApp(tk.Tk):
         # Capture frames from USB cameras
         self.captures = self.capture_frames(self.camera_indexes)
         print("captures :" ,self.captures)
-
+        self.c1=cv2.VideoCapture(0)
+        self.c2=cv2.VideoCapture(1)
+        self.c3=cv2.VideoCapture(2)
+        self.c4=cv2.VideoCapture(4)
         # Update video feed
         self.update_video_feed()
     
@@ -159,12 +167,23 @@ class VideoRecorderApp(tk.Tk):
                 selected_value = 0
             if self.selected_cameras[camera_index] =='Camera 1':
                 selected_value = 1
+                self.cam2=camera_index
             if self.selected_cameras[camera_index] =='Camera 2':
                 selected_value = 2
+                self.cam2=camera_index
+                
             if self.selected_cameras[camera_index] =='Camera 3':
                 selected_value = 4
+                self.cam4=camera_index
             print("Camera index", camera_index, "set to", selected_value)
-        
+            if selected_value==0:
+                    self.c1.release()
+                    self.c1=cv2.VideoCapture(selected_value)
+                    self.cam1=camera_index
+                    self.camera_labels[0].config(width=300, height=200)
+                    self.camera_labels[1].config(width=300, height=200)
+                    self.camera_labels[2].config(width=300, height=200)
+                    self.camera_labels[3].config(width=300, height=200)
             selected_camera_index = self.camera_dropdowns[camera_index].current()
 
             # Check if the selected camera index is already in use
@@ -332,12 +351,12 @@ class VideoRecorderApp(tk.Tk):
         return captures
 
     def update_video_feed(self):
-            
+        
         for i,(capture, label)  in enumerate (zip(self.captures, self.camera_labels)):
            
-            ret, frame = cv2.VideoCapture(0).read()
+            ret, frame = self.c1.read()
             if ret:
-                label = self.camera_labels[0]
+                label = self.camera_labels[self.cam1]
                 # Convert frame from BGR to RGB
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 # Resize frame to fit label size

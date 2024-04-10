@@ -79,13 +79,13 @@ class VideoRecorderApp(tk.Tk):
         self.cam4=0
         
         camera_indexes=get_camera_index()
-        self.selected_cameras = {index: 0 for index in [0, 1, 2, 3]}  # Dictionary to store selected cameras for each grid
+        self.selected_cameras = {index: None for index in [0, 1, 2, 3]}  # Dictionary to store selected cameras for each grid
         for i, camera_index in enumerate([0, 1, 2, 3]):
             print(camera_index)
             row = i // 2  # Calculate row index based on current iteration
             col = i % 2   # Calculate column index based on current iteration
 
-            camera_frame = tk.Label(left_frame, bg="white", relief=tk.SUNKEN, width=50, height=20)
+            camera_frame = tk.Label(left_frame, bg="white", relief=tk.SUNKEN, width=300, height=200)
             camera_frame.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
              # Dropdown menu for camera selection
             # Dropdown menu for camera selection
@@ -151,6 +151,20 @@ class VideoRecorderApp(tk.Tk):
         self.c3=cv2.VideoCapture(2)
         self.c4=cv2.VideoCapture(4)
         # Update video feed
+        ret, frame = self.c1.read()
+        if ret:
+            for i in range (4):
+                label = self.camera_labels[i]
+                # Convert frame from BGR to RGB
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                # Resize frame to fit label size
+                frame_resized = cv2.resize(frame_rgb, (300, 200))
+                # Convert frame to ImageTk format
+                img = ImageTk.PhotoImage(image=Image.fromarray(frame_resized))
+                # Update label with new image
+                label.config(image=img)
+                label.image = img
+                
         self.update_video_feed()
     
     
@@ -165,6 +179,7 @@ class VideoRecorderApp(tk.Tk):
             self.selected_cameras[camera_index] = selected_value
             if self.selected_cameras[camera_index] =='Camera 0':
                 selected_value = 0
+                self.cam1=camera_index
             if self.selected_cameras[camera_index] =='Camera 1':
                 selected_value = 1
                 self.cam2=camera_index
@@ -177,13 +192,22 @@ class VideoRecorderApp(tk.Tk):
                 self.cam4=camera_index
             print("Camera index", camera_index, "set to", selected_value)
             if selected_value==0:
-                    self.c1.release()
-                    self.c1=cv2.VideoCapture(selected_value)
-                    self.cam1=camera_index
-                    self.camera_labels[0].config(width=300, height=200)
-                    self.camera_labels[1].config(width=300, height=200)
-                    self.camera_labels[2].config(width=300, height=200)
-                    self.camera_labels[3].config(width=300, height=200)
+                self.c1.release()
+                self.c1=cv2.VideoCapture(selected_value)
+                self.cam1=camera_index
+            elif selected_value==1:
+                self.c2.release()
+                self.c2=cv2.VideoCapture(selected_value)
+                self.cam2=camera_index
+            elif selected_value==2:
+                self.c3.release()
+                self.c3=cv2.VideoCapture(selected_value)
+                self.cam3=camera_index
+            elif selected_value==3:
+                self.c4.release()
+                self.c4=cv2.VideoCapture(selected_value)
+                self.cam4=camera_index
+                    
             selected_camera_index = self.camera_dropdowns[camera_index].current()
 
             # Check if the selected camera index is already in use
@@ -354,61 +378,104 @@ class VideoRecorderApp(tk.Tk):
         
         for i,(capture, label)  in enumerate (zip(self.captures, self.camera_labels)):
            
-            ret, frame = self.c1.read()
-            if ret:
+            ret1, frame1 = self.c1.read()
+            if ret1 and self.selected_cameras[0] is not None:
                 label = self.camera_labels[self.cam1]
-                # Convert frame from BGR to RGB
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                # Resize frame to fit label size
-                frame_resized = cv2.resize(frame_rgb, (300, 200))
-                # Convert frame to ImageTk format
-                img = ImageTk.PhotoImage(image=Image.fromarray(frame_resized))
+                # Convert frame1 from BGR to RGB
+                frame1_rgb = cv2.cvtColor(frame1, cv2.COLOR_BGR2RGB)
+                # Resize frame1 to fit label size
+                frame1_resized = cv2.resize(frame1_rgb, (label.winfo_width(), label.winfo_height()))
+                # Convert frame1 to ImageTk format
+                img = ImageTk.PhotoImage(image=Image.fromarray(frame1_resized))
                 # Update label with new image
                 label.config(image=img)
                 label.image = img
                 
-                width= int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
-                height= int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                #width= self.width #uncomment for the custom height
-                #height= self.height
-                #print(width,height)
-                if self.output_paths is not None and self.recordStart:
-                    #print(self.output_paths[0])
-                    global writer,writer2,writer3,writer4
-                    if self.writing:
-                        if self.selected_cameras[0] is not None:
-                            print("writing",self.output_paths[0])
-                            writer= cv2.VideoWriter(self.output_paths[0], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
-                        if len(self.captures)>=2 and self.selected_cameras[1] is not None:
-                            writer2= cv2.VideoWriter(self.output_paths[1], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
-                        if len(self.captures)>=3 and self.selected_cameras[2] is not None:
-                            writer3= cv2.VideoWriter(self.output_paths[2], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
-                        if len(self.captures)>=4 and self.selected_cameras[3] is not None:
-                            writer4= cv2.VideoWriter(self.output_paths[3], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
-                        self.writing=False
-                    if i==0 and self.selected_cameras[0] is not None:
-                        #print("recording on cam0")
-                        writer.write(frame)
-                    if i==1 and len(self.captures)>=2 and self.selected_cameras[1] is not None:
-                        writer2.write(frame)
-                    if i==2  and len(self.captures)>=3 and self.selected_cameras[2] is not None:
-                        writer3.write(frame)
-                    if i==3 and len(self.captures)>=4 and self.selected_cameras[3] is not None:
-                        writer4.write(frame)
-                if self.shot_completed:
-                    #print(len(self.captures))
-                    if len(self.captures)>=1 and  self.selected_cameras[0] is not None:
-                        print("release writer")
-                        writer.release()
-                    if len(self.captures)>=2:
-                        writer2.release()
-                    if len(self.captures)>=3:    
-                        writer3.release()
-                    if len(self.captures)>=4:
-                        writer4.release()
-                    self.recordStart=False
-                    self.shot_completed=False
-                    self.writing=True
+            ret, frame2 = self.c2.read()
+            if ret and self.selected_cameras[1] is not None:
+                label = self.camera_labels[self.cam2]
+                # Convert frame2 from BGR to RGB
+                frame2_rgb = cv2.cvtColor(frame2, cv2.COLOR_BGR2RGB)
+                # Resize frame2 to fit label size
+                frame2_resized = cv2.resize(frame2_rgb, (label.winfo_width(), label.winfo_height()))
+                # Convert frame2 to ImageTk format
+                img = ImageTk.PhotoImage(image=Image.fromarray(frame2_resized))
+                # Update label with new image
+                label.config(image=img)
+                label.image = img
+                
+            ret, frame3 = self.c3.read()
+            if ret and self.selected_cameras[2] is not None:
+                label = self.camera_labels[self.cam3]
+                # Convert frame3 from BGR to RGB
+                frame3_rgb = cv2.cvtColor(frame3, cv2.COLOR_BGR2RGB)
+                # Resize frame3 to fit label size
+                frame3_resized = cv2.resize(frame3_rgb, (label.winfo_width(), label.winfo_height()))
+                # Convert frame3 to ImageTk format
+                img = ImageTk.PhotoImage(image=Image.fromarray(frame3_resized))
+                # Update label with new image
+                label.config(image=img)
+                label.image = img
+                
+            ret, frame4 = self.c4.read()
+            if ret and self.selected_cameras[3] is not None:
+                label = self.camera_labels[self.cam4]
+                # Convert frame4 from BGR to RGB
+                frame4_rgb = cv2.cvtColor(frame4, cv2.COLOR_BGR2RGB)
+                # Resize frame4 to fit label size
+                frame4_resized = cv2.resize(frame4_rgb, (label.winfo_width(), label.winfo_height()))
+                # Convert frame4 to ImageTk format
+                img = ImageTk.PhotoImage(image=Image.fromarray(frame4_resized))
+                # Update label with new image
+                label.config(image=img)
+                label.image = img
+                
+                
+            
+            #width= self.width #uncomment for the custom height
+            #height= self.height
+            #print(width,height)
+            if self.output_paths is not None and self.recordStart:
+                #print(self.output_paths[0])
+                global writer,writer2,writer3,writer4
+                width= int(self.c1.get(cv2.CAP_PROP_FRAME_WIDTH))
+                height= int(self.c1.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                if self.writing:
+                    if self.selected_cameras[0] is not None:
+                        print("writing",self.output_paths[0])
+                        writer= cv2.VideoWriter(self.output_paths[0], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
+                    if len(self.captures)>=2 and self.selected_cameras[1] is not None:
+                        writer2= cv2.VideoWriter(self.output_paths[1], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
+                    if len(self.captures)>=3 and self.selected_cameras[2] is not None:
+                        writer3= cv2.VideoWriter(self.output_paths[2], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
+                    if len(self.captures)>=4 and self.selected_cameras[3] is not None:
+                        writer4= cv2.VideoWriter(self.output_paths[3], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
+                    self.writing=False
+                if i==0 and self.selected_cameras[0] is not None:
+                    #print("recording on cam0")
+                    writer.write(frame1)
+                if i==1 and len(self.captures)>=2 and self.selected_cameras[1] is not None:
+                    writer2.write(frame2)
+                if i==2  and len(self.captures)>=3 and self.selected_cameras[2] is not None:
+                    writer3.write(frame3)
+                if i==3 and len(self.captures)>=4 and self.selected_cameras[3] is not None:
+                    writer4.write(frame4)
+            if self.shot_completed:
+                #print(len(self.captures))
+                if len(self.captures)>=1 and  self.selected_cameras[0] is not None:
+                    print("releasing writer...")
+                    #self.c1.release()
+                    writer.release()
+                    
+                if len(self.captures)>=2:
+                    writer2.release()
+                if len(self.captures)>=3:    
+                    writer3.release()
+                if len(self.captures)>=4:
+                    writer4.release()
+                self.recordStart=False
+                self.shot_completed=False
+                self.writing=True
                             
         self.after(10, self.update_video_feed)
         

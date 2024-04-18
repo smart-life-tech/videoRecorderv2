@@ -150,20 +150,13 @@ class VideoRecorderApp(tk.Tk):
         self.c2=cv2.VideoCapture(1)
         self.c3=cv2.VideoCapture(2)
         self.c4=cv2.VideoCapture(4)
-        # Update video feed
-        ret, frame = self.c1.read()
-        if ret:
-            for i in range (4):
-                label = self.camera_labels[i]
-                # Convert frame from BGR to RGB
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                # Resize frame to fit label size
-                frame_resized = cv2.resize(frame_rgb, (300, 200))
-                # Convert frame to ImageTk format
-                img = ImageTk.PhotoImage(image=Image.fromarray(frame_resized))
-                # Update label with new image
-                label.config(image=img)
-                label.image = img
+        for i in range (4):
+            label = self.camera_labels[i]
+            solid_color_image = Image.new("RGB", (300, 200), (0, 0, 0))  # Red color (RGB)
+            img = ImageTk.PhotoImage(image=solid_color_image)
+            # Update label with new image
+            label.config(image=img)
+            label.image = img
                 
         self.update_video_feed()
     
@@ -195,17 +188,21 @@ class VideoRecorderApp(tk.Tk):
                 self.c1.release()
                 self.c1=cv2.VideoCapture(selected_value)
                 self.cam1=camera_index
+                print("Camera index of", camera_index, "set to", selected_value)
             elif selected_value==1:
                 self.c2.release()
                 self.c2=cv2.VideoCapture(selected_value)
                 self.cam2=camera_index
+                print("Camera index of", camera_index, "set to", selected_value)
             elif selected_value==2:
                 self.c3.release()
                 self.c3=cv2.VideoCapture(selected_value)
+                print("Camera index of", camera_index, "set to", selected_value)
                 self.cam3=camera_index
             elif selected_value==3:
                 self.c4.release()
                 self.c4=cv2.VideoCapture(selected_value)
+                print("Camera index of", camera_index, "set to", selected_value)
                 self.cam4=camera_index
                     
             selected_camera_index = self.camera_dropdowns[camera_index].current()

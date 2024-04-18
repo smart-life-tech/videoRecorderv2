@@ -189,17 +189,17 @@ class VideoRecorderApp(tk.Tk):
                 self.c1=cv2.VideoCapture(selected_value)
                 self.cam1=camera_index
                 print("Camera index of", camera_index, "set to", selected_value)
-            elif selected_value==1:
+            if selected_value==1:
                 self.c2.release()
                 self.c2=cv2.VideoCapture(selected_value)
                 self.cam2=camera_index
                 print("Camera index of", camera_index, "set to", selected_value)
-            elif selected_value==2:
+            if selected_value==2:
                 self.c3.release()
                 self.c3=cv2.VideoCapture(selected_value)
                 print("Camera index of", camera_index, "set to", selected_value)
                 self.cam3=camera_index
-            elif selected_value==3:
+            if selected_value==3:
                 self.c4.release()
                 self.c4=cv2.VideoCapture(selected_value)
                 print("Camera index of", camera_index, "set to", selected_value)

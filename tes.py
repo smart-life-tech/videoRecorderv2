@@ -5,13 +5,16 @@ from tkinter import filedialog,ttk
 import threading
 from tkinter import messagebox
 import os
+import warnings
+# Suppress specific warning
+warnings.filterwarnings("ignore", message="global cap_msmf.cpp.*")
 
 def get_camera_index():
     # Try different camera indexes
     print("pinging all cameras wait a bit")
     detected_indexes = []
     for index in range(5):  # Adjust the range as needed
-        cap = cv2.VideoCapture(index)
+        cap = cv2.VideoCapture(index, cv2.CAP_DSHOW)
         if cap.isOpened():
             # Release the capture device
             cap.release()
@@ -146,10 +149,10 @@ class VideoRecorderApp(tk.Tk):
         # Capture frames from USB cameras
         self.captures = self.capture_frames(self.camera_indexes)
         print("captures :" ,self.captures)
-        self.c1=cv2.VideoCapture(0)
-        self.c2=cv2.VideoCapture(1)
-        self.c3=cv2.VideoCapture(2)
-        self.c4=cv2.VideoCapture(4)
+        self.c1=cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        self.c2=cv2.VideoCapture(1, cv2.CAP_DSHOW)
+        self.c3=cv2.VideoCapture(2, cv2.CAP_DSHOW)
+        self.c4=cv2.VideoCapture(4, cv2.CAP_DSHOW)
         for i in range (4):
             label = self.camera_labels[i]
             solid_color_image = Image.new("RGB", (300, 200), (0, 0, 0))  # Red color (RGB)
@@ -168,6 +171,12 @@ class VideoRecorderApp(tk.Tk):
         if selected_value == "None":
             self.selected_cameras[camera_index] = None
             print("Camera index", camera_index, "set to None")
+            label = self.camera_labels[camera_index]
+            solid_color_image = Image.new("RGB", (300, 200), (0, 0, 0))  # Red color (RGB)
+            img = ImageTk.PhotoImage(image=solid_color_image)
+            # Update label with new image
+            label.config(image=img)
+            label.image = img
         else:
             self.selected_cameras[camera_index] = selected_value
             if self.selected_cameras[camera_index] =='Camera 0':
@@ -184,25 +193,26 @@ class VideoRecorderApp(tk.Tk):
                 selected_value = 4
                 self.cam4=camera_index
             print("Camera index", camera_index, "set to", selected_value)
-            if selected_value==0:
+            if camera_index==0:
                 self.c1.release()
-                self.c1=cv2.VideoCapture(selected_value)
+                self.c1=cv2.VideoCapture(selected_value, cv2.CAP_DSHOW)
                 self.cam1=camera_index
-                print("Camera index of", camera_index, "set to", selected_value)
-            if selected_value==1:
+                print("Camera index of 1", camera_index, "set to", selected_value)
+            if camera_index==1:
                 self.c2.release()
-                self.c2=cv2.VideoCapture(selected_value)
+                self.c2=cv2.VideoCapture(selected_value, cv2.CAP_DSHOW)
                 self.cam2=camera_index
-                print("Camera index of", camera_index, "set to", selected_value)
-            if selected_value==2:
+                print("Camera index of 2", camera_index, "set to", selected_value)
+            if camera_index==2:
                 self.c3.release()
-                self.c3=cv2.VideoCapture(selected_value)
-                print("Camera index of", camera_index, "set to", selected_value)
+                self.c3=cv2.VideoCapture(selected_value, cv2.CAP_DSHOW)
+                print("Camera index of 3", camera_index, "set to", selected_value)
                 self.cam3=camera_index
-            if selected_value==3:
+            if camera_index==3:
                 self.c4.release()
-                self.c4=cv2.VideoCapture(selected_value)
-                print("Camera index of", camera_index, "set to", selected_value)
+                self.c4=cv2.VideoCapture(selected_value, cv2.CAP_DSHOW)
+                print("Camera index of 4", camera_index, "set to", selected_value)
+                self.selected_cameras[3]=camera_index
                 self.cam4=camera_index
                     
             selected_camera_index = self.camera_dropdowns[camera_index].current()
@@ -273,7 +283,7 @@ class VideoRecorderApp(tk.Tk):
         self.recorders = recorders
         self.recording_threads = recording_threads
         """
-        ###print(self.output_paths)
+        ##print(self.output_paths)
         #self.recorder = MultiCamRecorder(camera_indexes, output_paths)
         #self.recorder.record()
         self.recordStart=True
@@ -359,7 +369,7 @@ class VideoRecorderApp(tk.Tk):
         captures = []
         for index in camera_indexes:
             print(index)
-            capture = cv2.VideoCapture(index)
+            capture = cv2.VideoCapture(index, cv2.CAP_DSHOW)
             if camera_indexes !=3:
                 captures.append(capture)
             if camera_indexes==3:
@@ -403,6 +413,7 @@ class VideoRecorderApp(tk.Tk):
                 
             ret, frame3 = self.c3.read()
             if ret and self.selected_cameras[2] is not None:
+                print("camera c3 active")
                 label = self.camera_labels[self.cam3]
                 # Convert frame3 from BGR to RGB
                 frame3_rgb = cv2.cvtColor(frame3, cv2.COLOR_BGR2RGB)
@@ -415,8 +426,10 @@ class VideoRecorderApp(tk.Tk):
                 label.image = img
                 
             ret, frame4 = self.c4.read()
+            
             if ret and self.selected_cameras[3] is not None:
                 label = self.camera_labels[self.cam4]
+                
                 # Convert frame4 from BGR to RGB
                 frame4_rgb = cv2.cvtColor(frame4, cv2.COLOR_BGR2RGB)
                 # Resize frame4 to fit label size
@@ -433,11 +446,13 @@ class VideoRecorderApp(tk.Tk):
             #height= self.height
             #print(width,height)
             if self.output_paths is not None and self.recordStart:
-                #print(self.output_paths[0])
+                
                 global writer,writer2,writer3,writer4
                 width= int(self.c1.get(cv2.CAP_PROP_FRAME_WIDTH))
                 height= int(self.c1.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                print(width,height)
                 if self.writing:
+                    print(self.output_paths[0])
                     if self.selected_cameras[0] is not None:
                         print("writing",self.output_paths[0])
                         writer= cv2.VideoWriter(self.output_paths[0], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))

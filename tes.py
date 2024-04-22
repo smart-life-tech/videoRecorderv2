@@ -104,7 +104,7 @@ class VideoRecorderApp(tk.Tk):
 
             # Add the Combobox widget to the list
             self.camera_dropdowns.append(self.dropdown)
-        print(self.camera_labels)
+        #print(self.camera_labels)
 
         # Right side
         right_frame = tk.Frame(self)
@@ -148,7 +148,7 @@ class VideoRecorderApp(tk.Tk):
 
         # Capture frames from USB cameras
         self.captures = self.capture_frames(self.camera_indexes)
-        print("captures :" ,self.captures)
+        #print("captures :" ,self.captures)
         self.c1=cv2.VideoCapture(0, cv2.CAP_DSHOW)
         self.c2=cv2.VideoCapture(1, cv2.CAP_DSHOW)
         self.c3=cv2.VideoCapture(2, cv2.CAP_DSHOW)
@@ -183,38 +183,44 @@ class VideoRecorderApp(tk.Tk):
                 selected_value = 0
                 self.cam1=camera_index
                 self.selected_cameras[0]=selected_value
+                print("Camera index frame 1", camera_index, "set to", selected_value)
                 
-            if self.selected_cameras[camera_index] =='Camera 1':
+            elif self.selected_cameras[camera_index] =='Camera 1':
                 selected_value = 1
                 self.cam2=camera_index
                 self.selected_cameras[1]=selected_value
+                print("Camera index frame 2", camera_index, "set to", selected_value)
                 
-            if self.selected_cameras[camera_index] =='Camera 2':
+            elif self.selected_cameras[camera_index] =='Camera 2':
                 selected_value = 2
-                self.cam2=camera_index
+                self.cam3=camera_index
                 self.selected_cameras[2]=selected_value
+                print("Camera index frame 3", camera_index, "set to", selected_value)
                 
-            if self.selected_cameras[camera_index] =='Camera 3':
+            elif self.selected_cameras[camera_index] =='Camera 3':
                 selected_value = 4
                 self.cam4=camera_index
-                self.selected_cameras[3]=selected_value
-            print("Camera index", camera_index, "set to", selected_value)
+                self.selected_cameras[4]=selected_value
+                print("Camera index frame 4", camera_index, "set to", selected_value)
+                
+            print("Camera index final", camera_index, "set to", selected_value)
+                
             if camera_index==0:
                 self.c1.release()
                 self.c1=cv2.VideoCapture(selected_value, cv2.CAP_DSHOW)
                 self.cam1=camera_index
                 print("Camera index of 1", camera_index, "set to", selected_value)
-            if camera_index==1:
+            elif camera_index==1:
                 self.c2.release()
                 self.c2=cv2.VideoCapture(selected_value, cv2.CAP_DSHOW)
                 self.cam2=camera_index
                 print("Camera index of 2", camera_index, "set to", selected_value)
-            if camera_index==2:
+            elif camera_index==2:
                 self.c3.release()
                 self.c3=cv2.VideoCapture(selected_value, cv2.CAP_DSHOW)
                 print("Camera index of 3", camera_index, "set to", selected_value)
                 self.cam3=camera_index
-            if camera_index==3:
+            elif camera_index==3:
                 self.c4.release()
                 self.c4=cv2.VideoCapture(selected_value, cv2.CAP_DSHOW)
                 print("Camera index of 4", camera_index, "set to", selected_value)
@@ -419,7 +425,7 @@ class VideoRecorderApp(tk.Tk):
                 
             ret, frame3 = self.c3.read()
             if ret and self.selected_cameras[2] is not None:
-                print("camera c3 active")
+                #print("camera c3 active")
                 label = self.camera_labels[self.cam3]
                 # Convert frame3 from BGR to RGB
                 frame3_rgb = cv2.cvtColor(frame3, cv2.COLOR_BGR2RGB)

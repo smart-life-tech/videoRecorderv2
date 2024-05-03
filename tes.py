@@ -8,7 +8,7 @@ import os
 import warnings
 # Suppress specific warning
 warnings.filterwarnings("ignore", message="global cap_msmf.cpp.*")
-
+frame_rate = 30
 def get_camera_index():
     # Try different camera indexes
     print("pinging all cameras wait a bit")
@@ -34,7 +34,7 @@ class VideoRecorder:
         #output_path = self.output_paths[self.active_shot]
         self.recording = True
         self.capture = cv2.VideoCapture(self.camera_index,cv2.CAP_VFW)
-        self.writer = cv2.VideoWriter(self.output_paths, cv2.VideoWriter_fourcc(*'XVID'), 30, (640, 480))
+        self.writer = cv2.VideoWriter(self.output_paths, cv2.VideoWriter_fourcc(*'XVID'),  frame_rate, (640, 480))
 
         while self.recording:
             if self.capture.isOpened():
@@ -474,13 +474,13 @@ class VideoRecorderApp(tk.Tk):
                     print(self.output_paths[0])
                     if self.selected_cameras[0] is not None:
                         print("writing",self.output_paths[0])
-                        writer= cv2.VideoWriter(self.output_paths[0], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
+                        writer= cv2.VideoWriter(self.output_paths[0], cv2.VideoWriter_fourcc(*'mp4v'),  frame_rate, (width,height))
                     if len(self.captures)>=2 and self.selected_cameras[1] is not None:
-                        writer2= cv2.VideoWriter(self.output_paths[1], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
+                        writer2= cv2.VideoWriter(self.output_paths[1], cv2.VideoWriter_fourcc(*'mp4v'),  frame_rate, (width,height))
                     if len(self.captures)>=3 and self.selected_cameras[2] is not None:
-                        writer3= cv2.VideoWriter(self.output_paths[2], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
+                        writer3= cv2.VideoWriter(self.output_paths[2], cv2.VideoWriter_fourcc(*'mp4v'),  frame_rate, (width,height))
                     if len(self.captures)>=4 and self.selected_cameras[3] is not None:
-                        writer4= cv2.VideoWriter(self.output_paths[3], cv2.VideoWriter_fourcc(*'mp4v'), 20, (width,height))
+                        writer4= cv2.VideoWriter(self.output_paths[3], cv2.VideoWriter_fourcc(*'mp4v'),  frame_rate, (width,height))
                     self.writing=False
                 if i==0 and self.selected_cameras[0] is not None:
                     #print("recording on cam0")

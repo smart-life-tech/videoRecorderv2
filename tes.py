@@ -197,7 +197,7 @@ class VideoRecorderApp(tk.Tk):
                 self.selected_cameras[2]=selected_value
                 print("Camera index frame 3", camera_index, "set to", selected_value)
                 
-            elif self.selected_cameras[camera_index] =='Camera 3':
+            elif self.selected_cameras[camera_index] =='Camera 4':
                 selected_value = 4
                 self.cam4=camera_index
                 self.selected_cameras[4]=selected_value
@@ -462,7 +462,7 @@ class VideoRecorderApp(tk.Tk):
                 global writer,writer2,writer3,writer4
                 width= int(self.c1.get(cv2.CAP_PROP_FRAME_WIDTH))
                 height= int(self.c1.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                print(width,height)
+                #print(width,height)
                 if self.writing:
                     print(self.output_paths[0])
                     if self.selected_cameras[0] is not None:

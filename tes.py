@@ -197,10 +197,16 @@ class VideoRecorderApp(tk.Tk):
                 self.selected_cameras[2]=selected_value
                 print("Camera index frame 3", camera_index, "set to", selected_value)
                 
+            elif self.selected_cameras[camera_index] =='Camera 3':
+                selected_value = 3
+                self.cam4=camera_index
+                self.selected_cameras[3]=selected_value
+                print("Camera index frame 3", camera_index, "set to", selected_value)
+                
             elif self.selected_cameras[camera_index] =='Camera 4':
                 selected_value = 4
                 self.cam4=camera_index
-                self.selected_cameras[3]=selected_value
+                self.selected_cameras[4]=selected_value
                 print("Camera index frame 4", camera_index, "set to", selected_value)
                 
             print("Camera index final", camera_index, "set to", selected_value)

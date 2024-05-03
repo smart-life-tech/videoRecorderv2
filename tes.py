@@ -498,11 +498,11 @@ class VideoRecorderApp(tk.Tk):
                     #self.c1.release()
                     writer.release()
                     
-                if len(self.captures)>=2:
+                if len(self.captures)>=2  and self.selected_cameras[1] is not None:
                     writer2.release()
-                if len(self.captures)>=3:    
+                if len(self.captures)>=3 and self.selected_cameras[2] is not None:    
                     writer3.release()
-                if len(self.captures)>=4:
+                if len(self.captures)>=4 and self.selected_cameras[3] is not None:
                     writer4.release()
                 self.recordStart=False
                 self.shot_completed=False

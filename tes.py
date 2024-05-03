@@ -82,8 +82,8 @@ class VideoRecorderApp(tk.Tk):
         self.cam4=0
         
         camera_indexes=get_camera_index()
-        self.selected_cameras = {index: None for index in [0, 1, 2, 3]}  # Dictionary to store selected cameras for each grid
-        for i, camera_index in enumerate([0, 1, 2, 3]):
+        self.selected_cameras = {index: None for index in [0, 1, 2, 4]}  # Dictionary to store selected cameras for each grid
+        for i, camera_index in enumerate([0, 1, 2, 4]):
             print(camera_index)
             row = i // 2  # Calculate row index based on current iteration
             col = i % 2   # Calculate column index based on current iteration
@@ -200,7 +200,7 @@ class VideoRecorderApp(tk.Tk):
             elif self.selected_cameras[camera_index] =='Camera 4':
                 selected_value = 4
                 self.cam4=camera_index
-                self.selected_cameras[4]=selected_value
+                self.selected_cameras[3]=selected_value
                 print("Camera index frame 4", camera_index, "set to", selected_value)
                 
             print("Camera index final", camera_index, "set to", selected_value)

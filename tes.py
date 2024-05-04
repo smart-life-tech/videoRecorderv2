@@ -8,7 +8,7 @@ import os
 import warnings
 # Suppress specific warning
 warnings.filterwarnings("ignore", message="global cap_msmf.cpp.*")
-frame_rate = 30
+frame_rate = 5.0
 def get_camera_index():
     # Try different camera indexes
     print("pinging all cameras wait a bit")
@@ -17,6 +17,8 @@ def get_camera_index():
         cap = cv2.VideoCapture(index, cv2.CAP_DSHOW)
         if cap.isOpened():
             # Release the capture device
+            cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
             cap.release()
             detected_indexes.append(index)
     return detected_indexes
@@ -215,22 +217,30 @@ class VideoRecorderApp(tk.Tk):
             if camera_index==0:
                 self.c1.release()
                 self.c1=cv2.VideoCapture(selected_value, cv2.CAP_DSHOW)
+                self.c1.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+                self.c1.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
                 self.cam1=camera_index
                 print("Camera index of 1", camera_index, "set to", selected_value)
             elif camera_index==1:
                 self.c2.release()
                 self.c2=cv2.VideoCapture(selected_value, cv2.CAP_DSHOW)
+                self.c2.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+                self.c2.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
                 self.cam2=camera_index
                 print("Camera index of 2", camera_index, "set to", selected_value)
             elif camera_index==2:
                 self.c3.release()
                 self.c3=cv2.VideoCapture(selected_value, cv2.CAP_DSHOW)
+                self.c3.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+                self.c3.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
                 print("Camera index of 3", camera_index, "set to", selected_value)
                 self.cam3=camera_index
             elif camera_index==3:
                 self.c4.release()
                 self.c4=cv2.VideoCapture(selected_value, cv2.CAP_DSHOW)
                 print("Camera index of 4", camera_index, "set to", selected_value)
+                self.c4.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+                self.c4.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
                 self.selected_cameras[3]=camera_index
                 self.cam4=camera_index
                     
@@ -467,10 +477,11 @@ class VideoRecorderApp(tk.Tk):
             if self.output_paths is not None and self.recordStart:
                 
                 global writer,writer2,writer3,writer4
-                width= int(self.c1.get(cv2.CAP_PROP_FRAME_WIDTH))
-                height= int(self.c1.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                width=1920# int(self.c1.get(cv2.CAP_PROP_FRAME_WIDTH))
+                height= 1080#int(self.c1.get(cv2.CAP_PROP_FRAME_HEIGHT))
                 #print(width,height)
                 if self.writing:
+                    
                     print(self.output_paths[0])
                     if self.selected_cameras[0] is not None:
                         print("writing",self.output_paths[0])
@@ -484,12 +495,16 @@ class VideoRecorderApp(tk.Tk):
                     self.writing=False
                 if i==0 and self.selected_cameras[0] is not None:
                     #print("recording on cam0")
+                    frame1 = cv2.resize(frame1, (width, height))
                     writer.write(frame1)
                 if i==1 and len(self.captures)>=2 and self.selected_cameras[1] is not None:
+                    frame2 = cv2.resize(frame2, (width, height))
                     writer2.write(frame2)
                 if i==2  and len(self.captures)>=3 and self.selected_cameras[2] is not None:
+                    frame3 = cv2.resize(frame3_resized, (width, height))
                     writer3.write(frame3)
                 if i==3 and len(self.captures)>=4 and self.selected_cameras[3] is not None:
+                    frame3 = cv2.resize(frame3, (width, height))
                     writer4.write(frame4)
             if self.shot_completed:
                 #print(len(self.captures))
